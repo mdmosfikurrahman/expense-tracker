@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_table_expenses
+      author: mosfik
+      comment: "This changeset creates Expenses Table"
+      changes:
+        - sqlFile:
+            path: db/changelog/data/create_table_expenses.sql
+
+  - changeSet:
+      id: create_table_incomes
+      author: mosfik
+      comment: "This changeset creates Incomes Table"
+      changes:
+        - sqlFile:
+            path: db/changelog/data/create_table_incomes.sql

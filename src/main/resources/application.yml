@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: expense-tracker
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
+  main:
+    allow-bean-definition-overriding: true
+
+  jpa:
+    show-sql: false
+    open-in-view: false
+
+  liquibase:
+    change-log: classpath:db/changelog/changelog.yaml
+    enabled: true
+
+  task:
+    scheduling:
+      pool:
+        size: 10
+
+server:
+  port: 8085
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd hh:mm:ss a} | %highlight(%level) | [%file:%line] - %msg%n"

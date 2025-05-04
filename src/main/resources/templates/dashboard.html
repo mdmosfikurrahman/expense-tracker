@@ -1,1 +1,58 @@
-<h1>Hello from Dashboard</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Summary</title>
+    <link rel="stylesheet" href="/css/tracker-common.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
+</head>
+<body>
+<div class="container">
+    <h1>Dashboard</h1>
+
+    <form id="filter-form">
+        <input type="text" id="month" placeholder="Select Month (Optional)" />
+        <button type="submit">Apply Filter</button>
+        <button type="button" id="clear-filter">Clear</button>
+    </form>
+
+    <div style="margin-top: 30px;">
+        <h2>Summary</h2>
+        <table>
+            <tbody>
+            <tr>
+                <th>Total Income</th>
+                <td id="total-income">—</td>
+            </tr>
+            <tr>
+                <th>Total Expense</th>
+                <td id="total-expense">—</td>
+            </tr>
+            <tr>
+                <th>Balance</th>
+                <td id="balance">—</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="nav-cards">
+        <div class="nav-card income" onclick="window.location.href='/income'">
+            <span class="emoji">💰</span>
+            <span>Track Income</span>
+        </div>
+        <div class="nav-card expense" onclick="window.location.href='/expense'">
+            <span class="emoji">💸</span>
+            <span>Track Expense</span>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
+<script src="/js/dashboard.js"></script>
+<script src="/js/tracker-common.js"></script>
+</body>
+</html>

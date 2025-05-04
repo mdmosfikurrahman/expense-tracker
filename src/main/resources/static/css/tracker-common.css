@@ -165,6 +165,79 @@ input.error {
     margin-left: 10px;
 }
 
+.nav-cards {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+}
+
+.nav-card {
+    cursor: pointer;
+    background: white;
+    border: 2px solid #ccc;
+    border-radius: 12px;
+    padding: 20px 30px;
+    min-width: 150px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, background 0.3s ease, border 0.3s ease;
+}
+
+.nav-card:hover {
+    transform: translateY(-4px);
+    background-color: #f9f9f9;
+    border-color: #007bff;
+}
+
+.nav-card.income {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.nav-card.expense {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.nav-card .emoji {
+    font-size: 32px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* Filter section container */
+#income-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+    align-items: center;
+}
+
+#income-filters input,
+#income-filters button {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#income-filters button {
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    transition: background-color 0.2s ease-in-out;
+}
+
+#income-filters button:hover {
+    background-color: #0056b3;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }

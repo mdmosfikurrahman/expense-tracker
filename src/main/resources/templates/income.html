@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Income Tracker</title>
+    <link rel="stylesheet" href="/css/income.css">
+</head>
+<body>
+<div class="container">
+    <h1>Income Tracker</h1>
+
+    <form id="income-form">
+        <input type="text" id="source" placeholder="Source" required />
+        <input type="number" id="amount" placeholder="Amount" required />
+        <input type="text" id="month" placeholder="Month (e.g. January, 2025)" required />
+        <button type="submit">Add Income</button>
+    </form>
+
+    <h2>All Incomes</h2>
+    <table id="income-table">
+        <thead>
+        <tr>
+            <th>Source</th>
+            <th>Amount</th>
+            <th>Month</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- JS will populate this -->
+        </tbody>
+    </table>
+</div>
+
+<script src="/js/income.js"></script>
+<div id="toast-container" class="toast-container"></div>
+</body>
+</html>

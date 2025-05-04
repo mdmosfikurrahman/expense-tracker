@@ -31,4 +31,23 @@ public class IncomeRestController {
         List<IncomeResponse> incomes = incomeService.getAllIncomes();
         return RestResponse.success(HttpStatus.OK.value(), "All incomes fetched successfully", incomes);
     }
+
+    @GetMapping("/{id}")
+    public RestResponse<IncomeResponse> getIncomeById(@PathVariable Long id) {
+        IncomeResponse response = incomeService.getIncomeById(id);
+        return RestResponse.success(HttpStatus.OK.value(), "Income fetched successfully", response);
+    }
+
+    @PutMapping("/{id}")
+    public RestResponse<IncomeResponse> updateIncome(@PathVariable Long id, @RequestBody IncomeRequest request) {
+        validator.validate(request);
+        IncomeResponse response = incomeService.updateIncome(id, request);
+        return RestResponse.success(HttpStatus.OK.value(), "Income updated successfully", response);
+    }
+
+    @DeleteMapping("/{id}")
+    public RestResponse<Void> deleteIncome(@PathVariable Long id) {
+        incomeService.deleteIncome(id);
+        return RestResponse.success(HttpStatus.NO_CONTENT.value(), "Income deleted successfully", null);
+    }
 }

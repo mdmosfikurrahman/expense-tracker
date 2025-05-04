@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 @Builder
 public class IncomeResponse {
 
+    private Long id;
     private String source;
     private BigDecimal amount;
     private String month;

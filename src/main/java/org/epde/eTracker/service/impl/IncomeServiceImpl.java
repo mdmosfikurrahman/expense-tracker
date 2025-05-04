@@ -44,4 +44,32 @@ public class IncomeServiceImpl implements IncomeService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public IncomeResponse getIncomeById(Long id) {
+        Income income = incomeRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Income not found with ID: " + id));
+        return IncomeMapper.toResponse(income);
+    }
+
+    @Override
+    public IncomeResponse updateIncome(Long id, IncomeRequest request) {
+        incomeRequestValidator.validate(request);
+
+        Income existing = incomeRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Income not found with ID: " + id));
+
+        IncomeMapper.updateEntity(existing, request);
+
+        Income saved = incomeRepository.save(existing);
+        return IncomeMapper.toResponse(saved);
+    }
+
+    @Override
+    public void deleteIncome(Long id) {
+        if (!incomeRepository.existsById(id)) {
+            throw new NotFoundException("Income not found with ID: " + id);
+        }
+        incomeRepository.deleteById(id);
+    }
+
 }

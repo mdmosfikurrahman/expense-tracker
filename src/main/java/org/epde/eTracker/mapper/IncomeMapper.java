@@ -22,9 +22,17 @@ public class IncomeMapper {
 
     public static IncomeResponse toResponse(Income income) {
         return IncomeResponse.builder()
+                .id(income.getId())
                 .source(income.getSource())
                 .amount(income.getAmount())
                 .month(income.getMonth().format(FORMATTER))
                 .build();
     }
+
+    public static void updateEntity(Income existing, IncomeRequest request) {
+        existing.setSource(request.getSource());
+        existing.setAmount(request.getAmount());
+        existing.setMonth(YearMonth.parse(request.getMonth(), FORMATTER));
+    }
+
 }

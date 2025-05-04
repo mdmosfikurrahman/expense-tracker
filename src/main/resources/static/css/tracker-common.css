@@ -209,35 +209,6 @@ input.error {
     margin-bottom: 8px;
 }
 
-/* Filter section container */
-#income-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 20px 0;
-    align-items: center;
-}
-
-#income-filters input,
-#income-filters button {
-    padding: 8px 12px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-#income-filters button {
-    cursor: pointer;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    transition: background-color 0.2s ease-in-out;
-}
-
-#income-filters button:hover {
-    background-color: #0056b3;
-}
-
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }

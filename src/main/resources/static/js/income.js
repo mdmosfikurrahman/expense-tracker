@@ -9,25 +9,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let deleteId = null;
 
     flatpickr("#month", {
-        plugins: [
-            new monthSelectPlugin({
-                shorthand: false,
-                dateFormat: "F, Y",
-                altFormat: "F, Y",
-                theme: "light"
-            })
-        ]
+        plugins: [new monthSelectPlugin({shorthand: false, dateFormat: "F, Y", altFormat: "F, Y", theme: "light"})]
     });
 
-    const loadIncomes = async () => {
+    async function loadIncomes() {
         tableBody.innerHTML = '';
-
         try {
-            const res = await fetch('/incomes');
-            const json = await res.json();
-
-            if (res.ok && Array.isArray(json.data) && json.data.length > 0) {
-                json.data.forEach(income => {
+            const res = await fetch(API.incomes);
+            const {data} = await res.json();
+            if (Array.isArray(data) && data.length) {
+                data.forEach(income => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${income.source}</td>
@@ -36,34 +27,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>
                             <button class="action-btn edit" data-id="${income.id}">✏️</button>
                             <button class="action-btn delete" data-id="${income.id}">🗑️</button>
-                        </td>
-                    `;
+                        </td>`;
                     tableBody.appendChild(row);
                 });
-
                 attachRowActions();
             } else {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="4" style="text-align: center; color: #888;">No data found</td>`;
-                tableBody.appendChild(row);
+                tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888;">No data found</td></tr>`;
             }
-        } catch (err) {
-            const row = document.createElement('tr');
-            row.innerHTML = `<td colspan="4" style="text-align: center; color: #888;">Failed to load income data</td>`;
-            tableBody.appendChild(row);
+        } catch {
+            tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888;">Failed to load income data</td></tr>`;
         }
-    };
+    }
 
-    const attachRowActions = () => {
+    function attachRowActions() {
         document.querySelectorAll('.edit').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = btn.getAttribute('data-id');
-                const res = await fetch(`/incomes/${id}`);
+                const res = await fetch(API.income(id));
                 const json = await res.json();
                 if (res.ok) {
-                    document.getElementById('source').value = json.data.source;
-                    document.getElementById('amount').value = json.data.amount;
-                    document.getElementById('month')._flatpickr.setDate(json.data.month);
+                    form.source.value = json.data.source;
+                    form.amount.value = json.data.amount;
+                    form.month._flatpickr.setDate(json.data.month);
                     editingId = id;
                     showToast('info', 'Edit mode enabled');
                 } else {
@@ -78,11 +63,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 modal.classList.remove('hidden');
             });
         });
-    };
+    }
 
     confirmBtn.addEventListener('click', async () => {
         if (!deleteId) return;
-        const res = await fetch(`/incomes/${deleteId}`, {method: 'DELETE'});
+        const res = await fetch(API.income(deleteId), {method: 'DELETE'});
         if (res.ok) {
             showToast('success', 'Income deleted successfully');
             await loadIncomes();
@@ -100,54 +85,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        resetFields(['source', 'amount', 'month']);
 
-        ['source', 'amount', 'month'].forEach(field => {
-            const input = document.getElementById(field);
-            input.classList.remove('error');
-        });
-
-        const source = document.getElementById('source').value.trim();
-        const amount = parseFloat(document.getElementById('amount').value);
-        const month = document.getElementById('month').value.trim();
-
-        const payload = {source, amount, month};
+        const payload = {
+            source: form.source.value.trim(),
+            amount: parseFloat(form.amount.value),
+            month: form.month.value.trim()
+        };
 
         try {
-            let res;
-            if (editingId) {
-                res = await fetch(`/incomes/${editingId}`, {
-                    method: 'PUT',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(payload)
-                });
-            } else {
-                res = await fetch('/incomes', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(payload)
-                });
-            }
+            const res = await fetch(editingId ? API.income(editingId) : API.incomes, {
+                method: editingId ? 'PUT' : 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
 
             const json = await res.json();
-
             if (res.ok) {
                 form.reset();
                 editingId = null;
-                showToast('success', `Income ${res.status === 201 ? 'saved' : 'updated'} successfully!`);
+                showToast('success', res.status === 201 ? 'Saved!' : 'Updated!');
                 await loadIncomes();
-            } else if (json.error && Array.isArray(json.error)) {
-                json.error.forEach(err => {
-                    const field = err.field.toLowerCase();
-                    const input = document.getElementById(field);
-                    if (input) {
-                        input.classList.add('error');
-                    }
-                    showToast('error', `${err.field}: ${err.message}`);
-                });
+            } else if (Array.isArray(json.error)) {
+                handleErrors(json.error);
             } else {
-                showToast('error', json.message || 'An unknown error occurred.');
+                showToast('error', json.message || 'Unknown error');
             }
-        } catch (err) {
+        } catch {
             showToast('error', 'Failed to submit data');
         }
     });

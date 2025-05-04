@@ -9,24 +9,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let deleteId = null;
 
     flatpickr("#month", {
-        plugins: [
-            new monthSelectPlugin({
-                shorthand: false,
-                dateFormat: "F, Y",
-                altFormat: "F, Y",
-                theme: "light"
-            })
-        ]
+        plugins: [new monthSelectPlugin({ shorthand: false, dateFormat: "F, Y", altFormat: "F, Y", theme: "light" })]
     });
 
-    const loadExpenses = async () => {
+    async function loadExpenses() {
         tableBody.innerHTML = '';
         try {
-            const res = await fetch('/expenses');
-            const json = await res.json();
-
-            if (res.ok && Array.isArray(json.data) && json.data.length > 0) {
-                json.data.forEach(exp => {
+            const res = await fetch(API.expenses);
+            const { data } = await res.json();
+            if (Array.isArray(data) && data.length) {
+                data.forEach(exp => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${exp.category}</td>
@@ -35,29 +27,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>
                             <button class="action-btn edit" data-id="${exp.id}">✏️</button>
                             <button class="action-btn delete" data-id="${exp.id}">🗑️</button>
-                        </td>
-                    `;
+                        </td>`;
                     tableBody.appendChild(row);
                 });
                 attachRowActions();
             } else {
                 tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888;">No data found</td></tr>`;
             }
-        } catch (err) {
+        } catch {
             tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888;">Failed to load expenses</td></tr>`;
         }
-    };
+    }
 
-    const attachRowActions = () => {
+    function attachRowActions() {
         document.querySelectorAll('.edit').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = btn.getAttribute('data-id');
-                const res = await fetch(`/expenses/${id}`);
+                const res = await fetch(API.expense(id));
                 const json = await res.json();
                 if (res.ok) {
-                    document.getElementById('category').value = json.data.category;
-                    document.getElementById('amount').value = json.data.amount;
-                    document.getElementById('month')._flatpickr.setDate(json.data.month);
+                    form.category.value = json.data.category;
+                    form.amount.value = json.data.amount;
+                    form.month._flatpickr.setDate(json.data.month);
                     editingId = id;
                     showToast('info', 'Edit mode enabled');
                 } else {
@@ -72,11 +63,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 modal.classList.remove('hidden');
             });
         });
-    };
+    }
 
     confirmBtn.addEventListener('click', async () => {
         if (!deleteId) return;
-        const res = await fetch(`/expenses/${deleteId}`, {method: 'DELETE'});
+        const res = await fetch(API.expense(deleteId), { method: 'DELETE' });
         if (res.ok) {
             showToast('success', 'Expense deleted successfully');
             await loadExpenses();
@@ -94,48 +85,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        resetFields(['category', 'amount', 'month']);
 
-        ['category', 'amount', 'month'].forEach(field => {
-            document.getElementById(field).classList.remove('error');
-        });
-
-        const category = document.getElementById('category').value.trim();
-        const amount = parseFloat(document.getElementById('amount').value);
-        const month = document.getElementById('month').value.trim();
-        const payload = {category, amount, month};
+        const payload = {
+            category: form.category.value.trim(),
+            amount: parseFloat(form.amount.value),
+            month: form.month.value.trim()
+        };
 
         try {
-            let res;
-            if (editingId) {
-                res = await fetch(`/expenses/${editingId}`, {
-                    method: 'PUT',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(payload)
-                });
-            } else {
-                res = await fetch('/expenses', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(payload)
-                });
-            }
+            const res = await fetch(editingId ? API.expense(editingId) : API.expenses, {
+                method: editingId ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
 
             const json = await res.json();
             if (res.ok) {
                 form.reset();
                 editingId = null;
-                showToast('success', `Expense ${res.status === 201 ? 'saved' : 'updated'} successfully!`);
+                showToast('success', res.status === 201 ? 'Saved!' : 'Updated!');
                 await loadExpenses();
-            } else if (json.error && typeof json.error === 'object') {
-                Object.entries(json.error).forEach(([field, message]) => {
-                    const input = document.getElementById(field);
-                    if (input) input.classList.add('error');
-                    showToast('error', `${field}: ${message}`);
-                });
+            } else if (typeof json.error === 'object' && !Array.isArray(json.error)) {
+                const errors = Object.entries(json.error).map(([field, message]) => ({ field, message }));
+                handleErrors(errors);
             } else {
-                showToast('error', json.message || 'An unknown error occurred.');
+                showToast('error', json.message || 'Unknown error');
             }
-        } catch (err) {
+        } catch {
             showToast('error', 'Failed to submit data');
         }
     });

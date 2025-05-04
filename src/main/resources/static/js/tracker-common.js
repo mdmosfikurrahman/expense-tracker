@@ -9,3 +9,18 @@ function showToast(type, message) {
 
     setTimeout(() => toast.remove(), 5000);
 }
+
+function resetFields(fields) {
+    fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('error');
+    });
+}
+
+function handleErrors(errors) {
+    errors.forEach(({ field, message }) => {
+        const el = document.getElementById(field.toLowerCase());
+        if (el) el.classList.add('error');
+        showToast('error', `${field}: ${message}`);
+    });
+}

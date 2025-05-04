@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('income-form');
-    const tableBody = document.querySelector('#income-table tbody');
+    const form = document.getElementById('expense-form');
+    const tableBody = document.querySelector('#expense-table tbody');
     const modal = document.getElementById('delete-modal');
     const confirmBtn = document.getElementById('confirm-delete');
     const cancelBtn = document.getElementById('cancel-delete');
@@ -19,38 +19,32 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     });
 
-    const loadIncomes = async () => {
+    const loadExpenses = async () => {
         tableBody.innerHTML = '';
-
         try {
-            const res = await fetch('/incomes');
+            const res = await fetch('/expenses');
             const json = await res.json();
 
             if (res.ok && Array.isArray(json.data) && json.data.length > 0) {
-                json.data.forEach(income => {
+                json.data.forEach(exp => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${income.source}</td>
-                        <td>${income.amount}</td>
-                        <td>${income.month}</td>
+                        <td>${exp.category}</td>
+                        <td>${exp.amount}</td>
+                        <td>${exp.month}</td>
                         <td>
-                            <button class="action-btn edit" data-id="${income.id}">✏️</button>
-                            <button class="action-btn delete" data-id="${income.id}">🗑️</button>
+                            <button class="action-btn edit" data-id="${exp.id}">✏️</button>
+                            <button class="action-btn delete" data-id="${exp.id}">🗑️</button>
                         </td>
                     `;
                     tableBody.appendChild(row);
                 });
-
                 attachRowActions();
             } else {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="4" style="text-align: center; color: #888;">No data found</td>`;
-                tableBody.appendChild(row);
+                tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888;">No data found</td></tr>`;
             }
         } catch (err) {
-            const row = document.createElement('tr');
-            row.innerHTML = `<td colspan="4" style="text-align: center; color: #888;">Failed to load income data</td>`;
-            tableBody.appendChild(row);
+            tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888;">Failed to load expenses</td></tr>`;
         }
     };
 
@@ -58,16 +52,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.edit').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = btn.getAttribute('data-id');
-                const res = await fetch(`/incomes/${id}`);
+                const res = await fetch(`/expenses/${id}`);
                 const json = await res.json();
                 if (res.ok) {
-                    document.getElementById('source').value = json.data.source;
+                    document.getElementById('category').value = json.data.category;
                     document.getElementById('amount').value = json.data.amount;
                     document.getElementById('month')._flatpickr.setDate(json.data.month);
                     editingId = id;
                     showToast('info', 'Edit mode enabled');
                 } else {
-                    showToast('error', 'Failed to load income record');
+                    showToast('error', 'Failed to load expense record');
                 }
             });
         });
@@ -82,12 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     confirmBtn.addEventListener('click', async () => {
         if (!deleteId) return;
-        const res = await fetch(`/incomes/${deleteId}`, { method: 'DELETE' });
+        const res = await fetch(`/expenses/${deleteId}`, { method: 'DELETE' });
         if (res.ok) {
-            showToast('success', 'Income deleted successfully');
-            await loadIncomes();
+            showToast('success', 'Expense deleted successfully');
+            await loadExpenses();
         } else {
-            showToast('error', 'Failed to delete income');
+            showToast('error', 'Failed to delete expense');
         }
         modal.classList.add('hidden');
         deleteId = null;
@@ -101,27 +95,25 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        ['source', 'amount', 'month'].forEach(field => {
-            const input = document.getElementById(field);
-            input.classList.remove('error');
+        ['category', 'amount', 'month'].forEach(field => {
+            document.getElementById(field).classList.remove('error');
         });
 
-        const source = document.getElementById('source').value.trim();
+        const category = document.getElementById('category').value.trim();
         const amount = parseFloat(document.getElementById('amount').value);
         const month = document.getElementById('month').value.trim();
-
-        const payload = { source, amount, month };
+        const payload = { category, amount, month };
 
         try {
             let res;
             if (editingId) {
-                res = await fetch(`/incomes/${editingId}`, {
+                res = await fetch(`/expenses/${editingId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
             } else {
-                res = await fetch('/incomes', {
+                res = await fetch('/expenses', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -129,20 +121,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const json = await res.json();
-
             if (res.ok) {
                 form.reset();
                 editingId = null;
-                showToast('success', `Income ${res.status === 201 ? 'saved' : 'updated'} successfully!`);
-                await loadIncomes();
-            } else if (json.error && Array.isArray(json.error)) {
-                json.error.forEach(err => {
-                    const field = err.field.toLowerCase();
+                showToast('success', `Expense ${res.status === 201 ? 'saved' : 'updated'} successfully!`);
+                await loadExpenses();
+            } else if (json.error && typeof json.error === 'object') {
+                Object.entries(json.error).forEach(([field, message]) => {
                     const input = document.getElementById(field);
-                    if (input) {
-                        input.classList.add('error');
-                    }
-                    showToast('error', `${err.field}: ${err.message}`);
+                    if (input) input.classList.add('error');
+                    showToast('error', `${field}: ${message}`);
                 });
             } else {
                 showToast('error', json.message || 'An unknown error occurred.');
@@ -152,5 +140,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    loadIncomes();
+    loadExpenses();
 });

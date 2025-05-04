@@ -1,14 +1,20 @@
 package org.epde.eTracker.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.YearMonth;
 
 @Entity
+@Builder
 @Data
 @Table(name = "expenses")
+@AllArgsConstructor
+@NoArgsConstructor
 public class Expense {
 
     @Id

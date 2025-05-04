@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     confirmBtn.addEventListener('click', async () => {
         if (!deleteId) return;
-        const res = await fetch(`/expenses/${deleteId}`, { method: 'DELETE' });
+        const res = await fetch(`/expenses/${deleteId}`, {method: 'DELETE'});
         if (res.ok) {
             showToast('success', 'Expense deleted successfully');
             await loadExpenses();
@@ -102,20 +102,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const category = document.getElementById('category').value.trim();
         const amount = parseFloat(document.getElementById('amount').value);
         const month = document.getElementById('month').value.trim();
-        const payload = { category, amount, month };
+        const payload = {category, amount, month};
 
         try {
             let res;
             if (editingId) {
                 res = await fetch(`/expenses/${editingId}`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(payload)
                 });
             } else {
                 res = await fetch('/expenses', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(payload)
                 });
             }

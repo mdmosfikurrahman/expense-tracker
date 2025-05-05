@@ -1,7 +1,7 @@
 package org.epde.eTracker.controller;
 
 import jakarta.servlet.http.HttpSession;
-import org.epde.eTracker.model.User;
+import org.epde.eTracker.dto.response.AuthResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,7 +11,7 @@ public class ExpenseTrackerController {
 
     @GetMapping("/")
     public String dashboard(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loggedInUser");
+        AuthResponse user = (AuthResponse) session.getAttribute("loggedInUser");
         if (user == null) {
             return "redirect:/login";
         }
@@ -22,7 +22,6 @@ public class ExpenseTrackerController {
 
     @GetMapping("/login")
     public String loginPage(HttpSession session) {
-        // Optional: redirect logged-in user away from login page
         if (session.getAttribute("loggedInUser") != null) {
             return "redirect:/";
         }
@@ -39,7 +38,7 @@ public class ExpenseTrackerController {
 
     @GetMapping("/income")
     public String incomePage(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loggedInUser");
+        AuthResponse user = (AuthResponse) session.getAttribute("loggedInUser");
         if (user == null) {
             return "redirect:/login";
         }
@@ -50,7 +49,7 @@ public class ExpenseTrackerController {
 
     @GetMapping("/expense")
     public String expensePage(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("loggedInUser");
+        AuthResponse user = (AuthResponse) session.getAttribute("loggedInUser");
         if (user == null) {
             return "redirect:/login";
         }

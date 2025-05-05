@@ -17,9 +17,8 @@ public class UserMapper {
     public static AuthResponse toResponse(User user) {
         return AuthResponse.builder()
                 .id(user.getId())
-                .email(user.getEmail())
                 .fullName(user.getFirstName() + " " + user.getLastName())
-                .user(user)
+                .email(user.getEmail())
                 .build();
     }
 }

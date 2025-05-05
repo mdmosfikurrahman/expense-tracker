@@ -25,7 +25,7 @@ public class AuthRestController {
     public RestResponse<AuthResponse> login(@RequestBody LoginRequest request, HttpSession session) {
         AuthResponse authResponse = authService.login(request);
 
-        session.setAttribute("loggedInUser", authResponse.getUser());
+        session.setAttribute("loggedInUser", authResponse);
 
         return RestResponse.success(HttpStatus.OK.value(), "Login successful", authResponse);
     }

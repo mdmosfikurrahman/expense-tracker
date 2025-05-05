@@ -18,7 +18,7 @@
             <a href="/register" class="nav-btn">Register</a>
         </th:block>
         <th:block th:if="${user != null}">
-            <span th:text="'Welcome, ' + ${user.firstName}"></span>
+            <span th:text="'Welcome, ' + ${user.fullName}"></span>
             <a href="/logout" class="nav-btn danger">Logout</a>
         </th:block>
     </div>

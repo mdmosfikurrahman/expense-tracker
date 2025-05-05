@@ -8,9 +8,28 @@ document.addEventListener('DOMContentLoaded', () => {
     let editingId = null;
     let deleteId = null;
 
-    flatpickr("#month", {
-        plugins: [new monthSelectPlugin({ shorthand: false, dateFormat: "F, Y", altFormat: "F, Y", theme: "light" })]
+    const monthSelect = document.getElementById('month-select');
+    const yearSelect = document.getElementById('year-select');
+
+    const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    monthSelect.appendChild(new Option('-- Select Month --', '', true, true));
+    monthSelect.firstChild.disabled = true;
+
+    monthNames.forEach(month => {
+        monthSelect.appendChild(new Option(month, month));
     });
+
+    const currentYear = new Date().getFullYear();
+    yearSelect.appendChild(new Option('-- Select Year --', '', true, true));
+    yearSelect.firstChild.disabled = true;
+
+    for (let year = currentYear + 2; year >= currentYear - 10; year--) {
+        yearSelect.appendChild(new Option(year, year));
+    }
 
     async function loadExpenses() {
         tableBody.innerHTML = '';
@@ -85,12 +104,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        resetFields(['category', 'amount', 'month']);
+        resetFields(['category', 'amount', 'month-select', 'year-select']);
+
+        const selectedMonth = monthSelect.value;
+        const selectedYear = yearSelect.value;
+
+        if (!selectedMonth || !selectedYear) {
+            showToast('error', 'Please select both month and year');
+            return;
+        }
 
         const payload = {
             category: form.category.value.trim(),
             amount: parseFloat(form.amount.value),
-            month: form.month.value.trim()
+            month: `${selectedMonth}, ${selectedYear}`
         };
 
         try {
@@ -103,6 +130,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const json = await res.json();
             if (res.ok) {
                 form.reset();
+                monthSelect.value = '';
+                yearSelect.value = '';
                 editingId = null;
                 showToast('success', json.status === 201 ? 'Saved!' : 'Updated!');
                 await loadExpenses();

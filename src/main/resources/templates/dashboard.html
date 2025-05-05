@@ -8,6 +8,21 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
 </head>
 <body>
+<div class="top-nav">
+    <div class="nav-left">
+        <a href="/">eTracker</a>
+    </div>
+    <div class="nav-right">
+        <th:block th:if="${user == null}">
+            <a href="/login" class="nav-btn">Login</a>
+            <a href="/register" class="nav-btn">Register</a>
+        </th:block>
+        <th:block th:if="${user != null}">
+            <span th:text="'Welcome, ' + ${user.firstName}"></span>
+            <a href="/logout" class="nav-btn danger">Logout</a>
+        </th:block>
+    </div>
+</div>
 <div class="container">
     <h1>Dashboard</h1>
 

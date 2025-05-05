@@ -14,3 +14,11 @@ databaseChangeLog:
       changes:
         - sqlFile:
             path: db/changelog/data/create_table_incomes.sql
+
+  - changeSet:
+      id: create_table_users
+      author: mosfik
+      comment: "This changeset creates Users table for authentication"
+      changes:
+        - sqlFile:
+            path: db/changelog/data/create_table_users.sql

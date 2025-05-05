@@ -4,13 +4,45 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('delete-modal');
     const confirmBtn = document.getElementById('confirm-delete');
     const cancelBtn = document.getElementById('cancel-delete');
+    const monthSelect = document.getElementById('month-select');
+    const yearSelect = document.getElementById('year-select');
 
     let editingId = null;
     let deleteId = null;
 
-    flatpickr("#month", {
-        plugins: [new monthSelectPlugin({shorthand: false, dateFormat: "F, Y", altFormat: "F, Y", theme: "light"})]
+    const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    const defaultMonthOption = document.createElement('option');
+    defaultMonthOption.value = '';
+    defaultMonthOption.textContent = '-- Select Month --';
+    defaultMonthOption.selected = true;
+    defaultMonthOption.disabled = true;
+    monthSelect.appendChild(defaultMonthOption);
+
+    monthNames.forEach(month => {
+        const option = document.createElement('option');
+        option.value = month;
+        option.textContent = month;
+        monthSelect.appendChild(option);
     });
+
+    const currentYear = new Date().getFullYear();
+    const defaultYearOption = document.createElement('option');
+    defaultYearOption.value = '';
+    defaultYearOption.textContent = '-- Select Year --';
+    defaultYearOption.selected = true;
+    defaultYearOption.disabled = true;
+    yearSelect.appendChild(defaultYearOption);
+
+    for (let year = currentYear + 2; year >= currentYear - 10; year--) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+    }
 
     async function loadIncomes() {
         tableBody.innerHTML = '';
@@ -48,7 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) {
                     form.source.value = json.data.source;
                     form.amount.value = json.data.amount;
-                    form.month._flatpickr.setDate(json.data.month);
+                    const [editMonth, editYear] = json.data.month.split(',').map(s => s.trim());
+                    monthSelect.value = editMonth;
+                    yearSelect.value = editYear;
                     editingId = id;
                     showToast('info', 'Edit mode enabled');
                 } else {
@@ -85,12 +119,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        resetFields(['source', 'amount', 'month']);
+        resetFields(['source', 'amount', 'month-select', 'year-select']);
+
+        const selectedMonth = monthSelect.value;
+        const selectedYear = yearSelect.value;
+
+        if (!selectedMonth || !selectedYear) {
+            showToast('error', 'Please select both month and year');
+            return;
+        }
+
+        const monthFormatted = `${selectedMonth}, ${selectedYear}`;
 
         const payload = {
             source: form.source.value.trim(),
             amount: parseFloat(form.amount.value),
-            month: form.month.value.trim()
+            month: monthFormatted
         };
 
         try {
@@ -103,8 +147,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const json = await res.json();
             if (res.ok) {
                 form.reset();
+                monthSelect.value = '';
+                yearSelect.value = '';
                 editingId = null;
-                showToast('success', res.status === 201 ? 'Saved!' : 'Updated!');
+                showToast('success', json.status === 201 ? 'Saved!' : 'Updated!');
                 await loadIncomes();
             } else if (Array.isArray(json.error)) {
                 handleErrors(json.error);

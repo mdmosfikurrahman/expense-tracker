@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 form.reset();
                 editingId = null;
-                showToast('success', res.status === 201 ? 'Saved!' : 'Updated!');
+                showToast('success', json.status === 201 ? 'Saved!' : 'Updated!');
                 await loadExpenses();
             } else if (typeof json.error === 'object' && !Array.isArray(json.error)) {
                 const errors = Object.entries(json.error).map(([field, message]) => ({ field, message }));

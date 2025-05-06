@@ -8,42 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const expenseEl = document.getElementById('total-expense');
     const balanceEl = document.getElementById('balance');
 
-    const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-
-    const defaultMonthOption = document.createElement('option');
-    defaultMonthOption.value = '';
-    defaultMonthOption.textContent = '-- Select Month --';
-    defaultMonthOption.selected = true;
-    defaultMonthOption.disabled = true;
-    monthSelect.appendChild(defaultMonthOption);
-
-    monthNames.forEach(month => {
-        const option = document.createElement('option');
-        option.value = month;
-        option.textContent = month;
-        monthSelect.appendChild(option);
-    });
-
-    const currentYear = new Date().getFullYear();
-    const startYear = currentYear - 10;
-    const endYear = currentYear + 2;
-
-    const defaultYearOption = document.createElement('option');
-    defaultYearOption.value = '';
-    defaultYearOption.textContent = '-- Select Year --';
-    defaultYearOption.selected = true;
-    defaultYearOption.disabled = true;
-    yearSelect.appendChild(defaultYearOption);
-
-    for (let year = endYear; year >= startYear; year--) {
-        const option = document.createElement('option');
-        option.value = year;
-        option.textContent = year;
-        yearSelect.appendChild(option);
-    }
+    populateMonthYearDropdown(monthSelect, yearSelect);
 
     async function loadDashboard(monthYear = '') {
         const url = API.dashboard(monthYear);
@@ -51,12 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const res = await fetch(url);
-            const {data, message} = await res.json();
+            const { data, message } = await res.json();
 
             if (res.ok && data) {
-                incomeEl.textContent = data.totalIncome.toFixed(2);
-                expenseEl.textContent = data.totalExpense.toFixed(2);
-                balanceEl.textContent = data.balance.toFixed(2);
+                incomeEl.textContent = data.totalIncome;
+                expenseEl.textContent = data.totalExpense;
+                balanceEl.textContent = data.balance;
             } else {
                 incomeEl.textContent = expenseEl.textContent = balanceEl.textContent = '—';
                 showToast('error', message || 'Failed to fetch summary.');

@@ -1,3 +1,5 @@
+// expense.js
+
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('expense-form');
     const tableBody = document.querySelector('#expense-table tbody');
@@ -5,36 +7,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmBtn = document.getElementById('confirm-delete');
     const cancelBtn = document.getElementById('cancel-delete');
 
-    let editingId = null;
-    let deleteId = null;
-
     const monthSelect = document.getElementById('month-select');
     const yearSelect = document.getElementById('year-select');
 
-    const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
+    const filterForm = document.getElementById('expense-filter-form');
+    const filterMonth = document.getElementById('filter-month');
+    const filterYear = document.getElementById('filter-year');
+    const clearFilterBtn = document.getElementById('clear-expense-filter');
 
-    monthSelect.appendChild(new Option('-- Select Month --', '', true, true));
-    monthSelect.firstChild.disabled = true;
+    let editingId = null;
+    let deleteId = null;
 
-    monthNames.forEach(month => {
-        monthSelect.appendChild(new Option(month, month));
-    });
+    populateMonthYearDropdown(monthSelect, yearSelect);
+    populateMonthYearDropdown(filterMonth, filterYear);
 
-    const currentYear = new Date().getFullYear();
-    yearSelect.appendChild(new Option('-- Select Year --', '', true, true));
-    yearSelect.firstChild.disabled = true;
-
-    for (let year = currentYear + 2; year >= currentYear - 10; year--) {
-        yearSelect.appendChild(new Option(year, year));
-    }
-
-    async function loadExpenses() {
+    async function loadExpenses(monthYear = '') {
         tableBody.innerHTML = '';
+        let url = API.expenses;
+        if (monthYear) {
+            url += `?month=${encodeURIComponent(monthYear)}`;
+        }
+
         try {
-            const res = await fetch(API.expenses);
+            const res = await fetch(url);
             const { data } = await res.json();
             if (Array.isArray(data) && data.length) {
                 data.forEach(exp => {
@@ -67,7 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.ok) {
                     form.category.value = json.data.category;
                     form.amount.value = json.data.amount;
-                    form.month._flatpickr.setDate(json.data.month);
+                    const [editMonth, editYear] = json.data.month.split(',').map(s => s.trim());
+                    monthSelect.value = editMonth;
+                    yearSelect.value = editYear;
                     editingId = id;
                     showToast('info', 'Edit mode enabled');
                 } else {
@@ -146,5 +143,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    filterForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const m = filterMonth.value;
+        const y = filterYear.value;
+
+        if (!m || !y) {
+            showToast('error', 'Please select both month and year to filter.');
+            return;
+        }
+
+        const monthYear = `${m}, ${y}`;
+        loadExpenses(monthYear);
+    });
+
+    clearFilterBtn.addEventListener('click', () => {
+        filterMonth.value = '';
+        filterYear.value = '';
+        loadExpenses();
+    });
+
     loadExpenses();
+
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', e => {
+            if (e.target === modal) modal.classList.add('hidden');
+        });
+    });
+
 });

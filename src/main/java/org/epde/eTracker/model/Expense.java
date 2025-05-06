@@ -20,8 +20,14 @@ public class Expense {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String category;
+
     private BigDecimal amount;
+
     private YearMonth month;
+
+    @Column(nullable = false)
+    private Long userId;
 
 }

@@ -1,11 +1,12 @@
 package org.epde.eTracker.controller;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.epde.eTracker.dto.common.RestResponse;
 import org.epde.eTracker.dto.request.IncomeRequest;
 import org.epde.eTracker.dto.response.IncomeResponse;
 import org.epde.eTracker.service.IncomeService;
-import org.epde.eTracker.validator.IncomeRequestValidator;
+import org.epde.eTracker.util.SessionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,37 +18,59 @@ import java.util.List;
 public class IncomeRestController {
 
     private final IncomeService incomeService;
-    private final IncomeRequestValidator validator;
 
     @PostMapping
-    public RestResponse<IncomeResponse> createIncome(@RequestBody IncomeRequest request) {
-        validator.validate(request);
-        IncomeResponse response = incomeService.createIncome(request);
-        return RestResponse.success(HttpStatus.CREATED.value(), "Income saved successfully", response);
+    public RestResponse<IncomeResponse> createIncome(@RequestBody IncomeRequest request, HttpSession session) {
+        return SessionUtils.requireAuth(session)
+                .map(auth -> {
+                    IncomeResponse response = incomeService.createIncome(request, auth.getId());
+                    return RestResponse.success(HttpStatus.CREATED.value(), "Income saved successfully", response);
+                })
+                .orElseGet(SessionUtils::unauthorizedResponse);
     }
 
     @GetMapping
-    public RestResponse<List<IncomeResponse>> getAllIncomes() {
-        List<IncomeResponse> incomes = incomeService.getAllIncomes();
-        return RestResponse.success(HttpStatus.OK.value(), "All incomes fetched successfully", incomes);
+    public RestResponse<List<IncomeResponse>> getAllIncomes(
+            @RequestParam(required = false) String month,
+            HttpSession session
+    ) {
+        return SessionUtils.requireAuth(session)
+                .map(auth -> {
+                    List<IncomeResponse> incomes;
+                    if (month != null && !month.isBlank()) {
+                        incomes = incomeService.getIncomesByMonth(auth.getId(), month);
+                    } else {
+                        incomes = incomeService.getAllIncomes(auth.getId());
+                    }
+                    return RestResponse.success(HttpStatus.OK.value(), "Incomes fetched successfully", incomes);
+                })
+                .orElseGet(SessionUtils::unauthorizedResponse);
     }
 
     @GetMapping("/{id}")
-    public RestResponse<IncomeResponse> getIncomeById(@PathVariable Long id) {
-        IncomeResponse response = incomeService.getIncomeById(id);
-        return RestResponse.success(HttpStatus.OK.value(), "Income fetched successfully", response);
+    public RestResponse<IncomeResponse> getIncomeById(@PathVariable Long id, HttpSession session) {
+        return SessionUtils.requireAuth(session)
+                .map(auth -> {
+                    IncomeResponse response = incomeService.getIncomeById(id);
+                    return RestResponse.success(HttpStatus.OK.value(), "Income fetched successfully", response);
+                })
+                .orElseGet(SessionUtils::unauthorizedResponse);
     }
 
     @PutMapping("/{id}")
-    public RestResponse<IncomeResponse> updateIncome(@PathVariable Long id, @RequestBody IncomeRequest request) {
-        validator.validate(request);
-        IncomeResponse response = incomeService.updateIncome(id, request);
-        return RestResponse.success(HttpStatus.OK.value(), "Income updated successfully", response);
+    public RestResponse<IncomeResponse> updateIncome(@PathVariable Long id, @RequestBody IncomeRequest request, HttpSession session) {
+        return SessionUtils.requireAuth(session)
+                .map(auth -> {
+                    IncomeResponse response = incomeService.updateIncome(id, request);
+                    return RestResponse.success(HttpStatus.OK.value(), "Income updated successfully", response);
+                })
+                .orElseGet(SessionUtils::unauthorizedResponse);
     }
 
     @DeleteMapping("/{id}")
-    public RestResponse<Void> deleteIncome(@PathVariable Long id) {
-        incomeService.deleteIncome(id);
+    public RestResponse<Void> deleteIncome(@PathVariable Long id, HttpSession session) {
+        SessionUtils.runIfLoggedIn(session, auth -> incomeService.deleteIncome(id));
         return RestResponse.success(HttpStatus.NO_CONTENT.value(), "Income deleted successfully", null);
     }
+
 }

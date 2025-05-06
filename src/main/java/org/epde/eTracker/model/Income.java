@@ -20,8 +20,14 @@ public class Income {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String source;
+
     private BigDecimal amount;
+
     private YearMonth month;
+
+    @Column(nullable = false)
+    private Long userId;
 
 }

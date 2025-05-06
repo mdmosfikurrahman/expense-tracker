@@ -3,6 +3,7 @@ package org.epde.eTracker.mapper;
 import org.epde.eTracker.dto.request.IncomeRequest;
 import org.epde.eTracker.dto.response.IncomeResponse;
 import org.epde.eTracker.model.Income;
+import org.epde.eTracker.util.CurrencyUtil;
 
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -12,11 +13,12 @@ public class IncomeMapper {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMMM, yyyy", Locale.ENGLISH);
 
-    public static Income toEntity(IncomeRequest request) {
+    public static Income toEntity(IncomeRequest request, Long userId) {
         return Income.builder()
                 .source(request.getSource())
                 .amount(request.getAmount())
                 .month(YearMonth.parse(request.getMonth(), FORMATTER))
+                .userId(userId)
                 .build();
     }
 
@@ -24,7 +26,7 @@ public class IncomeMapper {
         return IncomeResponse.builder()
                 .id(income.getId())
                 .source(income.getSource())
-                .amount(income.getAmount())
+                .amount(CurrencyUtil.formatAmount(income.getAmount()))
                 .month(income.getMonth().format(FORMATTER))
                 .build();
     }

@@ -1,3 +1,5 @@
+// income.js
+
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('income-form');
     const tableBody = document.querySelector('#income-table tbody');
@@ -7,48 +9,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const monthSelect = document.getElementById('month-select');
     const yearSelect = document.getElementById('year-select');
 
+    const filterForm = document.getElementById('income-filter-form');
+    const filterMonth = document.getElementById('filter-month');
+    const filterYear = document.getElementById('filter-year');
+    const clearFilterBtn = document.getElementById('clear-income-filter');
+
     let editingId = null;
     let deleteId = null;
 
-    const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
+    populateMonthYearDropdown(monthSelect, yearSelect);
+    populateMonthYearDropdown(filterMonth, filterYear);
 
-    const defaultMonthOption = document.createElement('option');
-    defaultMonthOption.value = '';
-    defaultMonthOption.textContent = '-- Select Month --';
-    defaultMonthOption.selected = true;
-    defaultMonthOption.disabled = true;
-    monthSelect.appendChild(defaultMonthOption);
-
-    monthNames.forEach(month => {
-        const option = document.createElement('option');
-        option.value = month;
-        option.textContent = month;
-        monthSelect.appendChild(option);
-    });
-
-    const currentYear = new Date().getFullYear();
-    const defaultYearOption = document.createElement('option');
-    defaultYearOption.value = '';
-    defaultYearOption.textContent = '-- Select Year --';
-    defaultYearOption.selected = true;
-    defaultYearOption.disabled = true;
-    yearSelect.appendChild(defaultYearOption);
-
-    for (let year = currentYear + 2; year >= currentYear - 10; year--) {
-        const option = document.createElement('option');
-        option.value = year;
-        option.textContent = year;
-        yearSelect.appendChild(option);
-    }
-
-    async function loadIncomes() {
+    async function loadIncomes(filterMonthYear = '') {
         tableBody.innerHTML = '';
+        let url = API.incomes;
+        if (filterMonthYear) {
+            url += `?month=${encodeURIComponent(filterMonthYear)}`;
+        }
+
         try {
-            const res = await fetch(API.incomes);
-            const {data} = await res.json();
+            const res = await fetch(url);
+            const { data } = await res.json();
             if (Array.isArray(data) && data.length) {
                 data.forEach(income => {
                     const row = document.createElement('tr');
@@ -101,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     confirmBtn.addEventListener('click', async () => {
         if (!deleteId) return;
-        const res = await fetch(API.income(deleteId), {method: 'DELETE'});
+        const res = await fetch(API.income(deleteId), { method: 'DELETE' });
         if (res.ok) {
             showToast('success', 'Income deleted successfully');
             await loadIncomes();
@@ -140,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch(editingId ? API.income(editingId) : API.incomes, {
                 method: editingId ? 'PUT' : 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
@@ -162,5 +143,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    filterForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const m = filterMonth.value;
+        const y = filterYear.value;
+        if (!m || !y) {
+            showToast('error', 'Please select both month and year to apply filter');
+            return;
+        }
+        loadIncomes(`${m}, ${y}`);
+    });
+
+    clearFilterBtn.addEventListener('click', () => {
+        filterMonth.value = '';
+        filterYear.value = '';
+        loadIncomes();
+    });
+
     loadIncomes();
+
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', e => {
+            if (e.target === modal) modal.classList.add('hidden');
+        });
+    });
+
 });

@@ -26,15 +26,12 @@
 <div class="container">
     <h1>Income Tracker</h1>
 
-    <form id="income-form">
-        <input type="text" id="source" placeholder="Source" required />
-        <input type="number" id="amount" placeholder="Amount" required />
-        <select id="month-select" class="dropdown"></select>
-        <select id="year-select" class="dropdown"></select>
-        <button type="submit">Add Income</button>
-    </form>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <button type="button" class="nav-btn" onclick="document.getElementById('add-income-modal').classList.remove('hidden')">➕ Add Income</button>
+        <button type="button" class="nav-btn" onclick="document.getElementById('filter-income-modal').classList.remove('hidden')">🔍 Filter</button>
+    </div>
 
-    <h2>All Incomes</h2>
+    <h2 style="margin-top: 30px;">All Incomes</h2>
     <table id="income-table">
         <thead>
         <tr>
@@ -44,9 +41,41 @@
             <th>Actions</th>
         </tr>
         </thead>
-        <tbody>
-        </tbody>
+        <tbody></tbody>
     </table>
+</div>
+
+<!-- Add Income Modal -->
+<div id="add-income-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h2>Add Income</h2>
+        <form id="income-form">
+            <input type="text" id="source" placeholder="Source" required />
+            <input type="number" id="amount" placeholder="Amount" required />
+            <select id="month-select" class="dropdown"></select>
+            <select id="year-select" class="dropdown"></select>
+            <div class="modal-actions">
+                <button type="submit">Add</button>
+                <button type="button" onclick="document.getElementById('add-income-modal').classList.add('hidden')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Filter Modal -->
+<div id="filter-income-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h2>Filter Incomes</h2>
+        <form id="income-filter-form">
+            <select id="filter-month" class="dropdown"></select>
+            <select id="filter-year" class="dropdown"></select>
+            <div class="modal-actions">
+                <button type="submit">Apply</button>
+                <button type="button" id="clear-income-filter">Clear</button>
+                <button type="button" onclick="document.getElementById('filter-income-modal').classList.add('hidden')">Close</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div id="delete-modal" class="modal-overlay hidden">
